@@ -17,7 +17,7 @@ DOMAIN-SUFFIX,a.qr-lp-op.com,REJECT
 
 [Rewrite]
 # 对 sexygirl.cc 主页面注入防弹窗脚本
-^https?://sexygirl\.cc/ script-response-body sexygirl-anti-pop.js
+^https?://sexygirl\.cc/ script-response-body https://raw.githubusercontent.com/githubtestpaul/Scripting/master/sexygirl-anti-pop.js
 
 [Script]
 # 本地脚本方式（推荐，把 js 文件放到 Loon 的 Scripts 文件夹）
