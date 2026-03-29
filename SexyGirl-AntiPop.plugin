@@ -1,6 +1,6 @@
 #!name=SexyGirl.cc 防跳转防弹窗
 #!desc=允许正常访问 https://sexygirl.cc，阻止广告自动跳转和弹窗
-#!author=Grok 协助生成
+#!author=Grok 协助生成 + 原脚本作者
 #!version=2026.03.29
 
 [MITM]
@@ -11,17 +11,10 @@ hostname = sexygirl.cc, *.lh2-lp.com, *.ey-lp-op.org, *.qr-lp-op.com
 DOMAIN-SUFFIX,lh2-lp.com,REJECT
 DOMAIN-SUFFIX,ey-lp-op.org,REJECT
 DOMAIN-SUFFIX,qr-lp-op.com,REJECT
-DOMAIN-SUFFIX,a.lh2-lp.com,REJECT
-DOMAIN-SUFFIX,a.ey-lp-op.org,REJECT
-DOMAIN-SUFFIX,a.qr-lp-op.com,REJECT
-
-[Rewrite]
-# 对 sexygirl.cc 主页面注入防弹窗脚本
-^https?://sexygirl\.cc/ script-response-body https://raw.githubusercontent.com/githubtestpaul/Scripting/master/sexygirl-anti-pop.js
+DOMAIN-KEYWORD,lh2-lp,REJECT
+DOMAIN-KEYWORD,ey-lp-op,REJECT
+DOMAIN-KEYWORD,qr-lp-op,REJECT
 
 [Script]
-# 本地脚本方式（推荐，把 js 文件放到 Loon 的 Scripts 文件夹）
-# sexygirl-anti-pop.js = type=http-response,pattern=^https?://sexygirl\.cc/,script-path=sexygirl-anti-pop.js,timeout=60,debug=1
-
-# 如果你想用远程方式，把下面这行取消注释，并把 script-path 改成你上传后的 raw 链接
-sexygirl-anti-pop.js = type=http-response,pattern=^https?://sexygirl\.cc/,script-path=https://raw.githubusercontent.com/githubtestpaul/Scripting/master/sexygirl-anti-pop.js,timeout=60,debug=1
+# SexyGirl.cc 防弹窗防跳转脚本
+sexygirl-anti-pop.js = type=http-response, pattern=^https?://sexygirl\.cc/, script-path=https://raw.githubusercontent.com/githubtestpaul/Scripting/master/sexygirl-anti-pop.js, requires-body=true, timeout=60, debug=0
