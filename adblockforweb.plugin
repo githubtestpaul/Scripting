@@ -1,28 +1,43 @@
-#!name=rou.video 去横幅窄条广告 - 独立开关版
-#!desc=专治 rou.video 主页横行横幅广告 + 窄条推广条 | 通过 JS 隐藏元素 + 拦截广告资源 | 页面正常打开
-#!author=limbopro + Grok 针对性优化
+#!name=rou.video 去首页弹窗+横条广告 - 精准版
+#!desc=专清 rou.video 主页弹窗广告 + 横行/窄条横幅广告 | 基于原始 Adblock4limbo.sgmodule 规则优化 | 页面正常打开，仅移除广告
+#!author=limbopro 原作 + Grok 针对 rou.video 优化
 #!update=2026-04-07
 
 [Argument]
-rou.video 主页横幅窄条去广告 = switch,true,tag=[开关] rou.video 主页横幅 & 窄条广告,desc=重点清理首页横行 banner、窄条推广、浮动广告（不会让页面打不开）
+rou.video 首页弹窗横条去广告 = switch,true,tag=[开关] rou.video 首页弹窗 + 横条广告,desc=清理首页弹窗、横行 banner、窄条推广、浮动广告（已加强拦截）
 
 [MITM]
 hostname = %APPEND% rou.video, *.rou.video
 
 [Script]
-# rou.video 主页横幅窄条专用注入（增强隐藏逻辑）
-rou.video 横幅窄条去广告 = type=http-response, pattern=^https?://(www\.)?rou\.video, requires-body=1, max-size=5242880, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, timeout=60, enable={rou.video 主页横幅窄条去广告}
+# 核心 JS 注入（负责隐藏弹窗和横条容器）
+rou.video 首页去广告 = type=http-response, pattern=^https?://(www\.)?rou\.video, requires-body=1, max-size=5242880, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, timeout=60, enable={rou.video 首页弹窗横条去广告}
 
 [URL Rewrite]
-# 拦截 rou.video 常见横幅/窄条广告资源（banner、promo、strip）
-^https?://.*rou\.video.*(banner|promo|ad|ads|strip|sidebar|float|popup|track|stat|analytics).* - reject
+# ==================== rou.video 首页弹窗 & 横条广告专用拦截（来自原始模块 + 精准补充） ====================
+# 弹窗/横条常见广告资源
+^https?://.*rou\.video.*(popup|ad|ads|banner|promo|strip|float|sidebar|overlay|modal|track|stat|analytics).* - reject
 
-# 通用成人站横幅广告平台（对窄条有效）
-https?://[0-9a-zA-Z]{8,}\.(cloudfront|realsrv|tsyndicate|jads|capndr|mnaspm|go\.mnaspm)\..* - reject
-https://a\.realsrv\.com/ad-provider\.js - reject
-https://creative\..*widgets/Spot/lib\.js - reject
+# 原始模块中 rou.video / rouman5 常用广告平台
 https://mc\.yandex\.ru/metrika/tag\.js - reject
+https://cdn\.tsyndicate\.com/sdk/v1/master\.spot\.js - reject
 https://poweredby\.jads\.co/js/jads\.js - reject
+https://a\.magsrv\.com/ad-provider\.js - reject
+https://ra7\.xyz/z/.*/code\.js - reject
+https://creative\.live\..*\.com/widgets/Spot/lib\.js - reject
+https://a\.realsrv\.com/ad-provider\.js - reject
+
+# rou.video 首页常见广告域名（已验证有效）
+https?://[0-9a-zA-Z]{8,20}\.(cloudfront|realsrv|tsyndicate|jads|capndr|mnaspm|go\.mnaspm)\..* - reject
+^https?://go\.mnaspm\.com/.* - reject
+^https?://capndr\.com/.* - reject
+^https?://fmiqcupku\.com/.* - reject
+^https?://4a41fff8a6\.com/.* - reject
+^https?://ptelastaxo\.com/.* - reject
+^https?://bankingbloatedcaptive\.com/.* - reject
+
+# 额外横条/弹窗图片或 iframe 拦截
+^https?://.*\.(jpg|png|gif|webp).*?(ad|banner|promo|strip|popup).* - reject
 
 [General]
-# 无需额外 REJECT 主域名，防止页面加载失败
+# 无任何主域名 REJECT，保证页面正常打开
