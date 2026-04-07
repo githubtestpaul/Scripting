@@ -20,7 +20,6 @@ DOMAIN-SUFFIX,ad.manhuache.com,reject
 DOMAIN-SUFFIX,ads.manhuache.com,reject
 DOMAIN-SUFFIX,gg.manhuache.com,reject
 DOMAIN-SUFFIX,pop.manhuache.com,reject
-
 # 常见第三方广告/推广平台（漫画站常用）
 DOMAIN-SUFFIX,unionad.com,reject
 DOMAIN-SUFFIX,adunion.com,reject
@@ -38,7 +37,6 @@ DOMAIN-SUFFIX,allyes.com,reject
 DOMAIN-SUFFIX,51.la,reject
 DOMAIN-SUFFIX,cnzz.com,reject
 DOMAIN-SUFFIX,51yes.com,reject
-
 # 关键词拒绝（防止动态广告域名）
 DOMAIN-KEYWORD,ad-,reject
 DOMAIN-KEYWORD,pop-,reject
@@ -47,71 +45,17 @@ DOMAIN-KEYWORD,gg-,reject
 DOMAIN-KEYWORD,banner-,reject
 DOMAIN-KEYWORD,promotion-,reject
 DOMAIN-KEYWORD,adv-,reject
-
 # manhuache 主站走脚本清理
 DOMAIN-SUFFIX,manhuache.com,PROXY,manhuache-clean   # 作为备用
-[MITM]
-hostname = %APPEND% manhuache.com, *.manhuache.com
-
-[Rule]
 # 拒绝常见广告域名（可自行补充）
 DOMAIN-SUFFIX,ad.manhuache.com,reject
 DOMAIN-SUFFIX,ads.manhuache.com,reject
 DOMAIN-KEYWORD,ad-,reject
 DOMAIN-KEYWORD,pop-,reject
 DOMAIN-KEYWORD,union-,reject
-
 # 针对 manhuache.com 的规则
 DOMAIN-SUFFIX,manhuache.com,PROXY,manhuache-adblock
 
 [Script]
 # 主清理脚本（响应体修改）
 manhuache-adblock = type=http-response, pattern=^https?://(www\.)?manhuache\.com, script-path=https://raw.githubusercontent.com/githubtestpaul/Scripting/master/manhuache.js, requires-body=true, timeout=10, max-size=0, debug=true
-
-# 如果你不想用外部 js，也可以直接内嵌简单脚本（推荐先用下面这个简单版测试）
-
-[Rewrite]
-# 简单防跳转 + 移除常见广告元素（推荐先用这个测试）
-^https?://(www\.)?manhuache\.com/.*$ url script-response-body https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js  # 可先借用毒奶通用脚本测试
-
-[Script]
-# 内嵌版清理脚本（推荐使用这个，更针对性）
-manhuache-clean = type=http-response,pattern=^https?://(www\.)?manhuache\.com,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/githubtestpaul/Scripting/master/manhuache.js,timeout=10
-
-# ====================== JS 脚本开始（直接把下面整个JS内容粘贴到上面 script-path= 后面，或单独保存为 .js 文件） ======================
-# 如果内嵌，直接把下面 JS 代码整个复制到 script-path= 后面的位置（Loon 支持内嵌）
-
-const url = $request.url;
-if (url.includes("manhuache.com")) {
-    let body = $response.body;
-
-    // 1. 阻止常见自动跳转代码
-    body = body.replace(/location\.href\s*=\s*['"].*?['"]/gi, 'console.log("跳转已被阻止")');
-    body = body.replace(/window\.location\s*=\s*['"].*?['"]/gi, 'console.log("跳转已被阻止")');
-    body = body.replace(/window\.open\s*\(/gi, 'console.log("弹窗已被阻止")(');
-
-    // 2. 移除定时器跳转（setTimeout / setInterval）
-    body = body.replace(/setTimeout\s*\(\s*function\s*\(\)\s*\{[^}]*location[^}]*\}\s*,\s*\d+\)/gi, 'console.log("定时跳转已被阻止")');
-    body = body.replace(/setInterval\s*\(\s*function\s*\(\)\s*\{[^}]*location[^}]*\}/gi, 'console.log("定时跳转已被阻止")');
-
-    // 3. 隐藏或删除常见广告元素（根据实际页面结构可继续补充）
-    body = body.replace(/<iframe[^>]*>[\s\S]*?<\/iframe>/gi, '');  // 移除 iframe 广告
-    body = body.replace(/<div[^>]*class=["'][^"']*ad[^"']*["'][^>]*>[\s\S]*?<\/div>/gi, '');  // 移除含 ad 类的 div
-    body = body.replace(/<script[^>]*src=["'][^"']*(ad|pop|union|google|baidu)[^"']*["'][^>]*><\/script>/gi, '');  // 移除广告脚本
-
-    // 4. 注入 CSS 隐藏广告位
-    const css = `
-        <style>
-        div[class*="ad"], div[id*="ad"], iframe, .popup, .float-ad, [style*="position: fixed"] { display: none !important; visibility: hidden !important; }
-        </style>
-    `;
-    if (body.includes("</head>")) {
-        body = body.replace("</head>", css + "</head>");
-    } else if (body.includes("<body")) {
-        body = body.replace("<body", "<head>" + css + "</head><body");
-    }
-
-    $done({body: body});
-} else {
-    $done({});
-}
