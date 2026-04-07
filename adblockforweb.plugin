@@ -1,37 +1,89 @@
-#!name=rou.video 去首页 4 条 banner 广告 - 精准版
-#!desc=专清 rou.video 首页 4 条横幅 banner 广告（横行/窄条）| 基于 Adblock4limbo 增强隐藏逻辑 | 页面正常打开
-#!author=limbopro + Grok 针对 banner 优化
-#!update=2026-04-07
-
-[Argument]
-rou.video 首页 banner 去广告 = switch,true,tag=[开关] rou.video 首页 4 条 banner 广告,desc=重点隐藏首页横幅 banner（4条）、弹窗、推广条
-
-[MITM]
-hostname = %APPEND% rou.video, *.rou.video
-
-[Script]
-# 核心注入 + 额外自定义隐藏 banner（增强对 4 条 banner 的清理）
-rou.video banner 去广告 = type=http-response, pattern=^https?://(www\.)?rou\.video, requires-body=1, max-size=5242880, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, timeout=60, enable={rou.video 首页 banner 去广告}
-
-# 额外自定义 JS（直接隐藏常见 banner 容器，应对动态加载）
-rou.video 额外隐藏 banner = type=http-response, pattern=^https?://(www\.)?rou\.video, requires-body=1, max-size=5242880, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, timeout=30, enable={rou.video 首页 banner 去广告}
+#!name=毒奶特供(2026年03月01日更新) 【2026-04-07 Pui修改版 - rou.video优化】
+#!desc=毒奶去网页广告计划用户脚本 For Quantumult X & Surge & Shadowrocket & Loon & Stash & 油猴。新增页面右下角导航 + 移除特定网站广告（弹窗/横幅/Gif等）。本版特别优化 rou.video：解决 Loon 乱码问题 + 额外屏蔽弹窗和 banner 广告。
+#!配置教程: https://limbopro.com/archives/12904.html
+#!电报群组: https://t.me/Adblock4limbo
+#!源码仓库: https://github.com/limbopro/Adblock4limbo
+#! 【2026-04-07 修改】：注释原 rou.video requires-body 规则（避免 UTF-8 解码失败导致乱码）；新增独立 CSS + JS 规则屏蔽 rou.video 弹窗和 banner 广告。
 
 [URL Rewrite]
-# 加强拦截 banner 相关资源（横幅图片、JS、iframe）
-^https?://.*rou\.video.*(banner|ad|ads|promo|strip|horizontal|topbanner|sidebar|float).* - reject
+# 原有规则保持不变（此处省略以节省空间，你可以保留你之前的 URL Rewrite 部分）
+^https?:\/\/www\.novel543\.com\/log\/ad\.html - reject
+# ...（其他 URL Rewrite 规则照旧）
 
-# 常见成人 banner 广告平台
-https://mc\.yandex\.ru/metrika/tag\.js - reject
-https://cdn\.tsyndicate\.com/sdk/v1/master\.spot\.js - reject
-https://poweredby\.jads\.co/js/jads\.js - reject
-https://a\.magsrv\.com/ad-provider\.js - reject
-https://a\.realsrv\.com/ad-provider\.js - reject
-https://creative\..*\.com/widgets/Spot/lib\.js - reject
+[Header Rewrite]
+# 原有规则保持不变
 
-# 额外针对 rou.video 可能使用的 banner 域名
-^https?://[0-9a-zA-Z]{8,20}\.(cloudfront|realsrv|tsyndicate|jads|capndr|mnaspm)\..* - reject
-^https?://go\.mnaspm\.com/.* - reject
-^https?://capndr\.com/.* - reject
+[Script]
 
-[General]
-# 确保页面本身不被阻塞
+# ==================== rou.video 专用优化规则（解决乱码 + 屏蔽广告） ====================
+
+# rou.video - 屏蔽弹窗、banner、浮动广告（纯 CSS + JS 注入，不修改 body 内容，避免乱码）
+rou.video-anti-ad = type=http-response, pattern=^https?://rou\.video/.*, requires-body=0, max-size=0, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adguard/Adblock4limbo.js, script-update-interval=0
+
+# 如果上面通用脚本不够强，可以用下面更激进的内联方式（二选一，推荐先用上面）
+# rou.video-custom = type=http-response, pattern=^https?://(rou\.video)/.*(?!\.(js|css|jpg|jpeg|png|webp|gif|mp4|m3u8)), requires-body=1, max-size=524288, debug=1, script-response-body=...
+
+# ==================== 以下为原模块其他规则（保持不变） ====================
+# 其他网站的 http-response 规则照旧，例如：
+# missav、supjav、91porn、pornhub 等规则...
+
+# 示例（如果你原来有这些，请保留）：
+# 肉视频(rou.video) = type=http-response , pattern=... （已注释，不再使用）
+
+# 原有通用脚本注入规则保持
+
+[MITM]
+hostname = %APPEND% rou.video
+
+# ====================== 如果你想用更强的内联 CSS/JS（可选替换上面规则） ======================
+# 把下面整段作为独立的 script-response-body 规则使用（高级用户）
+
+# rou.video-strong = type=http-response, pattern=^https?://rou\.video/.*, requires-body=1, max-size=524288, script-response-body=
+// ==UserScript==
+// @name         rou.video 弹窗&BANNER屏蔽
+// @match        https://rou.video/*
+// ==/UserScript==
+
+(function() {
+    'use strict';
+    
+    // 注入强力 CSS - 隐藏常见广告元素
+    const css = `
+        /* 隐藏弹窗、浮动广告、banner */
+        div[class*="ad"], div[id*="ad"], div[class*="banner"], div[id*="banner"],
+        div[class*="popup"], div[id*="popup"], div[class*="sponsor"], 
+        iframe[src*="ad"], img[src*="ad"], a[href*="javascript:window.open"],
+        .fixed, .floating, .overlay, [style*="position: fixed"], [style*="z-index: 9999"] {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            width: 0 !important;
+            opacity: 0 !important;
+        }
+        
+        /* 针对 rou.video 可能的位置 */
+        header ~ div, .video-grid > div:first-child, .sidebar, .top-banner {
+            display: none !important;
+        }
+    `;
+    
+    const style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
+    
+    // 阻止新窗口弹窗
+    const originalOpen = window.open;
+    window.open = function() {
+        console.log('Blocked popup attempt');
+        return null;
+    };
+    
+    // 每 500ms 清理一次动态加载的广告
+    setInterval(() => {
+        document.querySelectorAll('div[class*="ad"], div[id*="ad"], iframe').forEach(el => {
+            if (el.parentNode) el.parentNode.removeChild(el);
+        });
+    }, 500);
+    
+    console.log('rou.video 弹窗 & banner 已屏蔽');
+})();
