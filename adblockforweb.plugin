@@ -1,0 +1,76 @@
+#!name=学习网站去广告
+#!desc=基于 Adblock4limbo 改造
+#!author=基于 limbopro 原作 + Grok 改造
+#!update=2026-04-07
+#!homepage=https://github.com/limbopro/Adblock4limbo
+#!icon=https://limbopro.com/favicon.ico
+
+[MITM]
+hostname = %APPEND% rou.video, *.rou.video, rouman5.com, *.rouman5.com, missav.com, jable.tv, pornhub.com, 91porn.com, javbus.com, supjav.com, netflav.com, hitomi.la, # 根据需要继续添加其他站点
+
+[Script]
+# 通用核心脚本（注入广告移除 JS + 右下角导航）
+Adblock4limbo Core = type=http-response, pattern=^https?://(www\.)?(rou\.video|rouman5\.com|missav\.com|jable\.tv|pornhub\.com|91porn\.com|javbus\.com|supjav\.com|netflav\.com|hitomi\.la|.*), requires-body=1, max-size=0, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, timeout=60
+
+# ==================== 每个站点独立开关（在插件详情里可单独开关） ====================
+
+# rou.video（肉视频） - 首页 + 播放页广告（弹窗、推广、统计、前贴片）
+rou.video 去广告 = type=http-response, pattern=^https?://(www\.)?rou\.video, requires-body=1, max-size=0, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, enabled=true
+
+# rouman5.com（肉漫相关）
+rouman5 去广告 = type=http-response, pattern=^https?://(www\.)?rouman5\.com, requires-body=1, max-size=0, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, enabled=true
+
+# missav.com
+missav 去广告 = type=http-response, pattern=^https?://(www\.)?missav\.com, requires-body=1, max-size=0, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, enabled=true
+
+# jable.tv
+jable 去广告 = type=http-response, pattern=^https?://.*jable\.tv, requires-body=1, max-size=0, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, enabled=true
+
+# pornhub.com
+pornhub 去广告 = type=http-response, pattern=^https?://(www|cn)\.pornhub\.com, requires-body=1, max-size=0, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, enabled=true
+
+# 91porn.com
+91porn 去广告 = type=http-response, pattern=^https?://.*91porn\.com, requires-body=1, max-size=0, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, enabled=true
+
+# javbus.com
+javbus 去广告 = type=http-response, pattern=^https?://.*javbus\.com, requires-body=1, max-size=0, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, enabled=true
+
+# supjav.com
+supjav 去广告 = type=http-response, pattern=^https?://.*supjav\.com, requires-body=1, max-size=0, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, enabled=true
+
+# netflav.com
+netflav 去广告 = type=http-response, pattern=^https?://.*netflav\.com, requires-body=1, max-size=0, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, enabled=true
+
+# hitomi.la
+hitomi 去广告 = type=http-response, pattern=^https?://.*hitomi\.la, requires-body=1, max-size=0, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, enabled=true
+
+# 你可以继续复制上面的模板添加其他站点（如 javlibrary、xvideos 等），只需修改 name 和 pattern 即可
+
+[Rule]
+# 把以下域名分流到对应插件策略（或直接用 REJECT 兜底）
+DOMAIN-SUFFIX,rou.video,Adblock4limbo Core
+DOMAIN-SUFFIX,rouman5.com,Adblock4limbo Core
+DOMAIN-SUFFIX,missav.com,Adblock4limbo Core
+DOMAIN-SUFFIX,jable.tv,Adblock4limbo Core
+DOMAIN-SUFFIX,pornhub.com,Adblock4limbo Core
+DOMAIN-SUFFIX,91porn.com,Adblock4limbo Core
+# ... 其他站点同理
+
+# rou.video 专用额外 reject 规则（增强播放页广告拦截）
+DOMAIN-SUFFIX,go.mnaspm.com,REJECT-DROP
+DOMAIN-SUFFIX,bankingbloatedcaptive.com,REJECT-DROP
+DOMAIN-SUFFIX,fmiqcupku.com,REJECT-DROP
+DOMAIN-SUFFIX,4a41fff8a6.com,REJECT-DROP
+DOMAIN-SUFFIX,capndr.com,REJECT-DROP
+DOMAIN-SUFFIX,ptelastaxo.com,REJECT-DROP
+DOMAIN-SUFFIX,mnaspm.com,REJECT-DROP
+DOMAIN-SUFFIX,js.capndr.com,REJECT-DROP
+
+# 通用广告平台兜底（可选）
+DOMAIN-SUFFIX,doubleclick.net,REJECT-DROP
+DOMAIN-SUFFIX,googlesyndication.com,REJECT-DROP
+DOMAIN-SUFFIX,tsyndicate.com,REJECT-DROP
+DOMAIN-SUFFIX,realsrv.com,REJECT-DROP
+
+[General]
+# 建议开启 MITM 并信任证书
