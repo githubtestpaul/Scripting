@@ -1,89 +1,98 @@
-#!name=毒奶特供(2026年03月01日更新) 【2026-04-07 Pui修改版 - rou.video优化】
-#!desc=毒奶去网页广告计划用户脚本 For Quantumult X & Surge & Shadowrocket & Loon & Stash & 油猴。新增页面右下角导航 + 移除特定网站广告（弹窗/横幅/Gif等）。本版特别优化 rou.video：解决 Loon 乱码问题 + 额外屏蔽弹窗和 banner 广告。
-#!配置教程: https://limbopro.com/archives/12904.html
-#!电报群组: https://t.me/Adblock4limbo
-#!源码仓库: https://github.com/limbopro/Adblock4limbo
-#! 【2026-04-07 修改】：注释原 rou.video requires-body 规则（避免 UTF-8 解码失败导致乱码）；新增独立 CSS + JS 规则屏蔽 rou.video 弹窗和 banner 广告。
-
-[URL Rewrite]
-# 原有规则保持不变（此处省略以节省空间，你可以保留你之前的 URL Rewrite 部分）
-^https?:\/\/www\.novel543\.com\/log\/ad\.html - reject
-# ...（其他 URL Rewrite 规则照旧）
-
-[Header Rewrite]
-# 原有规则保持不变
-
-[Script]
-
-# ==================== rou.video 专用优化规则（解决乱码 + 屏蔽广告） ====================
-
-# rou.video - 屏蔽弹窗、banner、浮动广告（纯 CSS + JS 注入，不修改 body 内容，避免乱码）
-rou.video-anti-ad = type=http-response, pattern=^https?://rou\.video/.*, requires-body=0, max-size=0, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adguard/Adblock4limbo.js, script-update-interval=0
-
-# 如果上面通用脚本不够强，可以用下面更激进的内联方式（二选一，推荐先用上面）
-# rou.video-custom = type=http-response, pattern=^https?://(rou\.video)/.*(?!\.(js|css|jpg|jpeg|png|webp|gif|mp4|m3u8)), requires-body=1, max-size=524288, debug=1, script-response-body=...
-
-# ==================== 以下为原模块其他规则（保持不变） ====================
-# 其他网站的 http-response 规则照旧，例如：
-# missav、supjav、91porn、pornhub 等规则...
-
-# 示例（如果你原来有这些，请保留）：
-# 肉视频(rou.video) = type=http-response , pattern=... （已注释，不再使用）
-
-# 原有通用脚本注入规则保持
+#!name=rou.video 去广告插件（解决乱码 + 屏蔽弹窗&banner）
+#!desc=专为 Loon 优化 rou.video：避免 UTF-8 解码失败导致的页面乱码，同时通过 CSS+JS 隐藏弹窗、横幅、浮动广告。2026-04-07 版本 by Grok + Pui
+#!author=Pui & Grok
+#!homepage=https://github.com/limbopro/Adblock4limbo
+#!update-url=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adguard/Adblock4limbo.js  (仅供参考，原脚本不直接用于此插件)
 
 [MITM]
-hostname = %APPEND% rou.video
+hostname = rou.video, *.rou.video
 
-# ====================== 如果你想用更强的内联 CSS/JS（可选替换上面规则） ======================
-# 把下面整段作为独立的 script-response-body 规则使用（高级用户）
+[Script]
+# rou.video 去广告 - 纯 CSS + JS 注入（requires-body=0，避免乱码）
+rou.video-anti-ad = type=http-response, pattern=^https?://rou\.video/.*, requires-body=0, max-size=0, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adguard/Adblock4limbo.js, timeout=10
 
-# rou.video-strong = type=http-response, pattern=^https?://rou\.video/.*, requires-body=1, max-size=524288, script-response-body=
-// ==UserScript==
-// @name         rou.video 弹窗&BANNER屏蔽
+# 如果需要更强的独立注入（推荐备用/替换上面一行），使用以下内联脚本
+# rou.video-strong = type=http-response, pattern=^https?://rou\.video/.*, requires-body=1, max-size=524288, script-response-body=// ==UserScript==
+// @name         rou.video Ad Blocker for Loon
+// @namespace    https://github.com/limbopro/Adblock4limbo
 // @match        https://rou.video/*
+// @run-at       document-start
 // ==/UserScript==
 
 (function() {
     'use strict';
     
-    // 注入强力 CSS - 隐藏常见广告元素
-    const css = `
-        /* 隐藏弹窗、浮动广告、banner */
+    // 强力 CSS 隐藏广告元素（覆盖常见弹窗、banner、浮动、推广位）
+    const adCSS = `
+        /* 通用广告隐藏 */
         div[class*="ad"], div[id*="ad"], div[class*="banner"], div[id*="banner"],
-        div[class*="popup"], div[id*="popup"], div[class*="sponsor"], 
-        iframe[src*="ad"], img[src*="ad"], a[href*="javascript:window.open"],
-        .fixed, .floating, .overlay, [style*="position: fixed"], [style*="z-index: 9999"] {
+        div[class*="popup"], div[id*="popup"], div[class*="sponsor"], div[class*="promotion"],
+        iframe[src*="ad"], iframe[src*="google"], img[src*="ad"], a[href*="javascript:window.open"],
+        .fixed, .floating, .overlay, [style*="position: fixed"], [style*="z-index: 999"],
+        [style*="z-index: 9999"], .modal, .dialog, .top-ad, .side-ad, .video-ad {
             display: none !important;
             visibility: hidden !important;
             height: 0 !important;
             width: 0 !important;
             opacity: 0 !important;
+            pointer-events: none !important;
         }
         
-        /* 针对 rou.video 可能的位置 */
-        header ~ div, .video-grid > div:first-child, .sidebar, .top-banner {
+        /* rou.video 特定位置针对性隐藏（首页/视频页常见广告位） */
+        header ~ div:first-child, .sidebar, .top-banner, .floating-button,
+        .video-container > div:not(.player), .recommend-ad, .popup-container {
             display: none !important;
         }
+        
+        /* 防止广告元素动态出现 */
+        body { overflow-x: hidden; }
     `;
     
-    const style = document.createElement('style');
-    style.textContent = css;
-    document.head.appendChild(style);
+    function injectCSS() {
+        if (document.getElementById('rou-adblock-style')) return;
+        const style = document.createElement('style');
+        style.id = 'rou-adblock-style';
+        style.textContent = adCSS;
+        (document.head || document.documentElement).appendChild(style);
+        console.log('[rou.video AdBlock] CSS 已注入');
+    }
     
-    // 阻止新窗口弹窗
+    // 阻止弹窗
     const originalOpen = window.open;
-    window.open = function() {
-        console.log('Blocked popup attempt');
+    window.open = function(url) {
+        console.log('[rou.video AdBlock] Blocked popup:', url);
         return null;
     };
     
-    // 每 500ms 清理一次动态加载的广告
-    setInterval(() => {
-        document.querySelectorAll('div[class*="ad"], div[id*="ad"], iframe').forEach(el => {
-            if (el.parentNode) el.parentNode.removeChild(el);
+    // 监控并移除动态广告
+    function cleanAds() {
+        document.querySelectorAll('div[class*="ad"], div[id*="ad"], iframe, .popup, .modal').forEach(el => {
+            if (el && el.parentNode) {
+                el.parentNode.removeChild(el);
+            }
         });
-    }, 500);
+    }
     
-    console.log('rou.video 弹窗 & banner 已屏蔽');
+    // 初始化
+    injectCSS();
+    setInterval(cleanAds, 800);   // 每800ms清理一次动态广告
+    
+    // MutationObserver 监控 DOM 变化（更彻底）
+    const observer = new MutationObserver(() => {
+        cleanAds();
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    
+    console.log('[rou.video AdBlock] 插件已启动 - 弹窗 & Banner 已屏蔽');
 })();
+
+[URL Rewrite]
+# 可选：额外域名级广告域名拒绝（来自 Adblock4limbo 常见 rou.video 相关域名）
+^https?://go\.mnaspm\.com - reject
+^https?://.*\.rou\.video/.*(ad|banner|popup|sponsor|promotion).* - reject
+
+# 如果你有其他 rou.video 相关广告域名，可以继续追加在这里
+
+[Header Rewrite]
+# 可选：放松 CSP 以允许脚本注入（如果页面有严格 CSP）
+^https?://rou\.video header-replace Content-Security-Policy *
