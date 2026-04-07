@@ -2,7 +2,54 @@
 #!desc=屏蔽 manhuache.com 广告 + 防止自动跳转其他网页
 #!author=基于用户需求定制
 #!update-url=https://你的订阅链接（可选，自行托管）
+#!name=漫画车去广告防跳转
+#!desc=屏蔽 manhuache.com 广告 + 防止自动跳转（纯本地JS版）
+#!author=定制版
 
+[MITM]
+hostname = %APPEND% manhuache.com, *.manhuache.com
+
+[Rewrite]
+# 使用正则精确匹配，执行清理脚本
+^https?://(www\.)?manhuache\.com url script-response-body https://raw.githubusercontent.com/githubtestpaul/Scripting/master/manhuache.js
+
+[Rule]
+# ==================== 加强的广告域名拒绝规则 ====================
+# 本站可能的广告子域
+DOMAIN-SUFFIX,ad.manhuache.com,reject
+DOMAIN-SUFFIX,ads.manhuache.com,reject
+DOMAIN-SUFFIX,gg.manhuache.com,reject
+DOMAIN-SUFFIX,pop.manhuache.com,reject
+
+# 常见第三方广告/推广平台（漫画站常用）
+DOMAIN-SUFFIX,unionad.com,reject
+DOMAIN-SUFFIX,adunion.com,reject
+DOMAIN-SUFFIX,admaster.com.cn,reject
+DOMAIN-SUFFIX,adsame.com,reject
+DOMAIN-SUFFIX,adnxs.com,reject
+DOMAIN-SUFFIX,doubleclick.net,reject
+DOMAIN-SUFFIX,googleadservices.com,reject
+DOMAIN-SUFFIX,googlesyndication.com,reject
+DOMAIN-SUFFIX,baidu.com,reject   # 部分百度推广
+DOMAIN-SUFFIX,bdstatic.com,reject
+DOMAIN-SUFFIX,hm.baidu.com,reject
+DOMAIN-SUFFIX,tanx.com,reject
+DOMAIN-SUFFIX,allyes.com,reject
+DOMAIN-SUFFIX,51.la,reject
+DOMAIN-SUFFIX,cnzz.com,reject
+DOMAIN-SUFFIX,51yes.com,reject
+
+# 关键词拒绝（防止动态广告域名）
+DOMAIN-KEYWORD,ad-,reject
+DOMAIN-KEYWORD,pop-,reject
+DOMAIN-KEYWORD,union-,reject
+DOMAIN-KEYWORD,gg-,reject
+DOMAIN-KEYWORD,banner-,reject
+DOMAIN-KEYWORD,promotion-,reject
+DOMAIN-KEYWORD,adv-,reject
+
+# manhuache 主站走脚本清理
+DOMAIN-SUFFIX,manhuache.com,PROXY,manhuache-clean   # 作为备用
 [MITM]
 hostname = %APPEND% manhuache.com, *.manhuache.com
 
@@ -15,11 +62,11 @@ DOMAIN-KEYWORD,pop-,reject
 DOMAIN-KEYWORD,union-,reject
 
 # 针对 manhuache.com 的规则
-DOMAIN-SUFFIX,manhuache.com,SCRIPT,manhuache-adblock
+DOMAIN-SUFFIX,manhuache.com,PROXY,manhuache-adblock
 
 [Script]
 # 主清理脚本（响应体修改）
-manhuache-adblock = type=http-response, pattern=^https?://(www\.)?manhuache\.com, script-path=https://raw.githubusercontent.com/yourname/loon-scripts/main/manhuache-clean.js, requires-body=true, timeout=10, max-size=0, debug=true
+manhuache-adblock = type=http-response, pattern=^https?://(www\.)?manhuache\.com, script-path=https://raw.githubusercontent.com/githubtestpaul/Scripting/master/manhuache.js, requires-body=true, timeout=10, max-size=0, debug=true
 
 # 如果你不想用外部 js，也可以直接内嵌简单脚本（推荐先用下面这个简单版测试）
 
@@ -29,7 +76,7 @@ manhuache-adblock = type=http-response, pattern=^https?://(www\.)?manhuache\.com
 
 [Script]
 # 内嵌版清理脚本（推荐使用这个，更针对性）
-manhuache-clean = type=http-response,pattern=^https?://(www\.)?manhuache\.com,requires-body=1,max-size=0,script-path=以下JS代码粘贴处,timeout=10
+manhuache-clean = type=http-response,pattern=^https?://(www\.)?manhuache\.com,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/githubtestpaul/Scripting/master/manhuache.js,timeout=10
 
 # ====================== JS 脚本开始（直接把下面整个JS内容粘贴到上面 script-path= 后面，或单独保存为 .js 文件） ======================
 # 如果内嵌，直接把下面 JS 代码整个复制到 script-path= 后面的位置（Loon 支持内嵌）
