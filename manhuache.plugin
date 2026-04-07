@@ -58,4 +58,4 @@ DOMAIN-SUFFIX,manhuache.com,PROXY,manhuache-adblock
 
 [Script]
 # 主清理脚本（响应体修改）
-manhuache-adblock = type=http-response, pattern=^https?://(www\.)?manhuache\.com, script-path=https://raw.githubusercontent.com/githubtestpaul/Scripting/master/manhuache.js, requires-body=true, timeout=10, max-size=0, debug=true
+http-response ^https?://(www\.)?manhuache\.com, requires-body=1,max-size=0,debug=true,script-path=https://raw.githubusercontent.com/githubtestpaul/Scripting/master/manhuache.js
