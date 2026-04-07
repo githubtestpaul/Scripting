@@ -1,62 +1,28 @@
-#!name=毒奶去网页广告 - 独立开关版（仅清理广告）
-#!desc=仅通过JS注入清理页面内广告，不阻塞页面加载 | rou.video 已优化，避免页面打不开 | 每个站点独立开关
-#!author=limbopro 原作 + Grok 修正
-#!homepage=https://github.com/limbopro/Adblock4limbo
-#!icon=https://limbopro.com/favicon.ico
+#!name=rou.video 去横幅窄条广告 - 独立开关版
+#!desc=专治 rou.video 主页横行横幅广告 + 窄条推广条 | 通过 JS 隐藏元素 + 拦截广告资源 | 页面正常打开
+#!author=limbopro + Grok 针对性优化
 #!update=2026-04-07
 
 [Argument]
-rou.video 去广告 = switch,true,tag=[开关] rou.video（肉视频）,desc=仅清理首页弹窗、播放页前贴片、推广、Gif广告（不会让页面打不开）
-
-rouman5 去广告 = switch,true,tag=[开关] rouman5.com,desc=清理相关广告
-
-missav 去广告 = switch,true,tag=[开关] missav.com,desc=清理弹窗与播放广告
-
-jable 去广告 = switch,true,tag=[开关] jable.tv,desc=清理弹窗、Gif广告
-
-pornhub 去广告 = switch,true,tag=[开关] pornhub.com,desc=清理视频广告、跳转
-
-91porn 去广告 = switch,true,tag=[开关] 91porn.com,desc=清理视频广告
-
-javbus 去广告 = switch,true,tag=[开关] javbus.com,desc=清理弹窗
-
-supjav 去广告 = switch,true,tag=[开关] supjav.com,desc=清理播放页广告
-
-netflav 去广告 = switch,true,tag=[开关] netflav.com,desc=清理弹窗推广
-
-hitomi 去广告 = switch,true,tag=[开关] hitomi.la,desc=清理广告
-
-# 添加更多站点时继续复制模板即可
+rou.video 主页横幅窄条去广告 = switch,true,tag=[开关] rou.video 主页横幅 & 窄条广告,desc=重点清理首页横行 banner、窄条推广、浮动广告（不会让页面打不开）
 
 [MITM]
-hostname = %APPEND% rou.video, *.rou.video, rouman5.com, missav.com, jable.tv, pornhub.com, 91porn.com, javbus.com, supjav.com, netflav.com, hitomi.la
+hostname = %APPEND% rou.video, *.rou.video
 
 [Script]
-# ==================== 仅广告清理脚本（独立开关） ====================
-rou.video 去广告脚本 = type=http-response, pattern=^https?://(www\.)?rou\.video, requires-body=1, max-size=5242880, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, timeout=60, enable={rou.video 去广告}
-
-rouman5 去广告脚本 = type=http-response, pattern=^https?://(www\.)?rouman5\.com, requires-body=1, max-size=5242880, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, timeout=60, enable={rouman5 去广告}
-
-missav 去广告脚本 = type=http-response, pattern=^https?://(www\.)?missav\.com, requires-body=1, max-size=5242880, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, timeout=60, enable={missav 去广告}
-
-jable 去广告脚本 = type=http-response, pattern=^https?://.*jable\.tv, requires-body=1, max-size=5242880, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, timeout=60, enable={jable 去广告}
-
-pornhub 去广告脚本 = type=http-response, pattern=^https?://(www|cn)\.pornhub\.com, requires-body=1, max-size=5242880, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, timeout=60, enable={pornhub 去广告}
-
-91porn 去广告脚本 = type=http-response, pattern=^https?://.*91porn\.com, requires-body=1, max-size=5242880, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, timeout=60, enable={91porn 去广告}
-
-javbus 去广告脚本 = type=http-response, pattern=^https?://.*javbus\.com, requires-body=1, max-size=5242880, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, timeout=60, enable={javbus 去广告}
-
-supjav 去广告脚本 = type=http-response, pattern=^https?://.*supjav\.com, requires-body=1, max-size=5242880, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, timeout=60, enable={supjav 去广告}
-
-netflav 去广告脚本 = type=http-response, pattern=^https?://.*netflav\.com, requires-body=1, max-size=5242880, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, timeout=60, enable={netflav 去广告}
-
-hitomi 去广告脚本 = type=http-response, pattern=^https?://.*hitomi\.la, requires-body=1, max-size=5242880, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, timeout=60, enable={hitomi 去广告}
+# rou.video 主页横幅窄条专用注入（增强隐藏逻辑）
+rou.video 横幅窄条去广告 = type=http-response, pattern=^https?://(www\.)?rou\.video, requires-body=1, max-size=5242880, script-path=https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/Adblock4limbo.js, timeout=60, enable={rou.video 主页横幅窄条去广告}
 
 [URL Rewrite]
-# 只保留少量安全静态广告拦截（避免误杀页面）
-# rou.video 相关（如果有明显静态广告链接可补充，否则留空更安全）
-# https://mc.yandex.ru/metrika/tag.js - reject   （示例，如有问题可删除整行）
+# 拦截 rou.video 常见横幅/窄条广告资源（banner、promo、strip）
+^https?://.*rou\.video.*(banner|promo|ad|ads|strip|sidebar|float|popup|track|stat|analytics).* - reject
+
+# 通用成人站横幅广告平台（对窄条有效）
+https?://[0-9a-zA-Z]{8,}\.(cloudfront|realsrv|tsyndicate|jads|capndr|mnaspm|go\.mnaspm)\..* - reject
+https://a\.realsrv\.com/ad-provider\.js - reject
+https://creative\..*widgets/Spot/lib\.js - reject
+https://mc\.yandex\.ru/metrika/tag\.js - reject
+https://poweredby\.jads\.co/js/jads\.js - reject
 
 [General]
-# 无需额外 REJECT 规则，避免页面打不开
+# 无需额外 REJECT 主域名，防止页面加载失败
