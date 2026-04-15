@@ -1,107 +1,98 @@
-// Loon 去广告脚本 - x13k6u5a738rw.com:58011
-// 作者：Grok 基于你原脚本优化
-
+// Loon 加强版去广告 - x13k6u5a738rw.com:58011
 var body = $response.body;
 
-if (!body || !/<!doctype|<html/i.test(body)) {
-    $done({ body: body });
+if (!body || !/<html|<!doctype/i.test(body)) {
+    $done({ body });
     return;
 }
 
-// ==================== 针对该网站的 CSS 规则 ====================
+console.log('【x13k净化】脚本已执行，body长度：' + body.length);
+
+// 更全面的 CSS
 const css = `<style id="adblock-css">
-/* 开屏弹窗、通知 */
-#notice_container, .event-notice, .application-popup, .popup, .modal,
-
-/* 广告栏、底部横条、友情链接、信息栏 */
-.addbox, .infomation, .post-content, .ads, .ad-box,
-
-/* 详情页广告、推荐应用、分享横幅 */
-.list-sec-top, .list-sec, #copy-img,
-
-/* 整个页脚（大事记、领现金、合作等） */
-.footer, .foot, footer,
-
-/* 统计和广告 iframe */
-iframe[src*="yandex"], iframe[src*="google"], iframe[src*="doubleclick"],
-iframe[src*="ads"], iframe[width="100%"][height="250"]
-
-/* 列表页广告条目 */
-.video-item:has(a.gotoclick), .video-item:has(a.tjtagmanager), 
-.video-item:has(a[adv_id]), .video-item:has([class*="ad"])
-{display:none!important; height:0!important; overflow:hidden!important; visibility:hidden!important;}
+#notice_container,.event-notice,.application-popup,.popup,.modal,.overlay,
+.addbox,.infomation,.post-content,.ads,.ad-box,.ad-container,.advert,
+.list-sec-top,.list-sec,#copy-img,.recommend,.friend-link,
+.footer,footer,.foot,.bottom-bar,
+iframe[src*="yandex"],iframe[src*="google"],iframe[src*="doubleclick"],iframe[src*="ads"],
+.video-item:has(a.gotoclick),.video-item:has(a.tjtagmanager),
+.video-item:has(a[adv_id]),.video-item:has([class*="ad"]),
+div[class*="ad"], div[id*="ad"]
+{display:none!important;height:0!important;overflow:hidden!important;visibility:hidden!important;}
 </style>`;
 
-// ==================== 针对该网站的 JS 清理逻辑 ====================
+// 更强力的 JS
 const js = `<script id="adblock-js">
 (function(){
+    console.log('【x13k净化】JS注入成功');
+
     function removeAds() {
-        // 移除广告视频项
-        document.querySelectorAll('.video-item').forEach(function(item) {
-            var link = item.querySelector('a');
-            if (link && (
-                link.classList.contains('gotoclick') ||
-                link.classList.contains('tjtagmanager') ||
-                link.hasAttribute('adv_id') ||
-                /ad|tj|promo|click/i.test(link.href || '')
-            )) {
-                item.remove();
+        console.log('【x13k净化】开始清理广告...');
+
+        // 强制移除所有广告视频项
+        document.querySelectorAll('.video-item, .list-item, .item').forEach(item => {
+            const a = item.querySelector('a');
+            if (a) {
+                const href = a.href || '';
+                const cls = a.className || '';
+                if (cls.includes('gotoclick') || cls.includes('tjtagmanager') || 
+                    a.hasAttribute('adv_id') || /ad|tj|promo|click|stats|go/i.test(href + cls)) {
+                    console.log('移除广告项:', href);
+                    item.remove();
+                }
             }
         });
 
-        // 移除各类弹窗和广告容器
-        const selectors = [
-            "#notice_container", ".event-notice", ".application-popup",
-            ".addbox", ".infomation", ".post-content", ".list-sec-top",
-            ".list-sec", "#copy-img", ".footer", "footer"
-        ];
+        // 大范围移除
+        const badSelectors = ["#notice_container",".event-notice",".application-popup",".addbox",".infomation",".post-content",
+            ".list-sec-top",".list-sec","#copy-img",".footer","footer",".popup",".modal",".overlay",".ad",".ads"];
         
-        selectors.forEach(function(sel) {
-            document.querySelectorAll(sel).forEach(function(el) {
+        badSelectors.forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => {
+                console.log('移除元素:', sel);
                 el.remove();
             });
         });
 
-        // 移除可疑广告脚本
-        document.querySelectorAll('script').forEach(function(s) {
-            var src = s.getAttribute('src') || '';
-            if (src.includes('stats.kwvprfcr.xyz') || 
-                src.includes('yandex.ru') || 
-                src.includes('googletagmanager') || 
-                src.includes('gtag/js') ||
-                src.includes('doubleclick') ||
-                /ad|promo|analytics/i.test(src)) {
+        // 移除广告脚本
+        document.querySelectorAll('script').forEach(s => {
+            const src = s.src || s.getAttribute('src') || '';
+            if (/stats\.kwvprfcr|yandex|googletagmanager|gtag|doubleclick|ads|promo|analytics/i.test(src)) {
+                console.log('移除广告脚本:', src);
                 s.remove();
             }
         });
 
-        // 额外清理可能出现的浮动广告
-        document.querySelectorAll('div[style*="fixed"], div[style*="absolute"], .fixed, .float').forEach(function(el) {
-            if (el.innerText.length < 500 && /广告|下载|app|install/i.test(el.innerText)) {
+        // 激进清理：所有固定/绝对定位且包含广告关键词的层
+        document.querySelectorAll('div, section').forEach(el => {
+            const style = el.getAttribute('style') || '';
+            const text = el.innerText || '';
+            if ((style.includes('fixed') || style.includes('absolute')) && 
+                /广告|下载|安装|APP|立即观看|点击|赞助|赞助商/i.test(text)) {
                 el.remove();
             }
         });
     }
 
-    // 执行时机
+    // 多时机执行
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", removeAds);
     } else {
         removeAds();
     }
-    
-    setTimeout(removeAds, 800);
-    setTimeout(removeAds, 2000);
-    setTimeout(removeAds, 5000);
+    setTimeout(removeAds, 500);
+    setTimeout(removeAds, 1500);
+    setTimeout(removeAds, 3000);
+    setTimeout(removeAds, 6000);
+    setTimeout(removeAds, 10000);
 })();
 <\/script>`;
 
-// 注入 CSS 和 JS
+// 注入
 body = body.replace(/<\/head>/i, css + '</head>');
 body = body.replace(/<\/body>/i, js + '</body>');
 
-// 额外清理残留的广告脚本
-body = body.replace(/<script[^>]*?(stats\.kwvprfcr\.xyz|yandex\.ru|googletagmanager|gtag|doubleclick)[^>]*>[\s\S]*?<\/script>/gi, '');
-body = body.replace(/<script[^>]*src=["'][^"']*(stats\.kwvprfcr|yandex|gtag|doubleclick)[^"']*["'][^>]*>/gi, '');
+// 强力清理脚本标签
+body = body.replace(/<script[^>]*?(stats\.kwvprfcr\.xyz|yandex\.ru|googletagmanager|gtag|doubleclick|kwvprfcr)[^>]*>[\s\S]*?<\/script>/gi, '');
 
-$done({ body: body });
+$done({ body });
