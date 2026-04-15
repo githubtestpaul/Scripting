@@ -1,16 +1,20 @@
-#!name = x13k6u5a738rw 净化 (黑料不打烊镜像)
+#!name = x13k6u5a738rw 净化 (黑料不打烊)
+#!desc = 针对 x13k6u5a738rw.com:58011 去广告脚本
 #!author = Grok
 #!update = 2026-04-15
+#!homepage = https://github.com/githubtestpaul/Scripting
 
-# ==================== 重写规则 ====================
+[MITM]
+hostname = x13k6u5a738rw.com, *.x13k6u5a738rw.com, stats.kwvprfcr.xyz, mc.yandex.ru
+
+[Rewrite]
+# Accept-Encoding 修复
 ^https?://(?:www\.)?x13k6u5a738rw\.com:58011/(?:$|\?|archives/|category/|memora|search|index\.htm) url request-header (\r\n)Accept-Encoding:.+(\r\n) request-header $1Accept-Encoding: identity$2
 
+# 主去广告脚本
 ^https?://(?:www\.)?x13k6u5a738rw\.com:58011/(?:$|\?|archives/|category/|memora|search|index\.htm) url script-response-body https://raw.githubusercontent.com/githubtestpaul/Scripting/master/aaa.js
 
 # 广告域名直拒
 ^https?://stats\.kwvprfcr\.xyz url reject
 ^https?://mc\.yandex\.ru url reject
-^https?://.*?(doubleclick|googletagmanager|pagead|adsbygoogle).*$ url reject
-
-# ==================== MITM 主机名 ====================
-hostname = x13k6u5a738rw.com, *.x13k6u5a738rw.com, stats.kwvprfcr.xyz, mc.yandex.ru
+^https?://(doubleclick|googletagmanager|pagead|adsbygoogle|kwvprfcr) url reject
