@@ -1,5 +1,5 @@
 #!name = x13k6u5a738rw 净化
-#!desc = 黑料不打烊镜像站去广告 - 远程引用
+#!desc = 远程引用去广告
 #!author = Grok
 #!update = 2026-04-15
 
@@ -7,13 +7,9 @@
 hostname = x13k6u5a738rw.com, *.x13k6u5a738rw.com, stats.kwvprfcr.xyz, mc.yandex.ru
 
 [Rewrite]
-# Accept-Encoding 修复
-^https?://(?:www\.)?x13k6u5a738rw\.com:58011/ url request-header (\r\n)Accept-Encoding:.+(\r\n) request-header $1Accept-Encoding: identity$2
+^https?://x13k6u5a738rw\.com:58011 url request-header (\r\n)Accept-Encoding:.+(\r\n) request-header $1Accept-Encoding: identity$2
 
-# 主去广告脚本 - 直接远程引用（推荐这种写法）
-^https?://(?:www\.)?x13k6u5a738rw\.com:58011/ url script-response-body https://raw.githubusercontent.com/githubtestpaul/Scripting/master/aaa.js
+^https?://x13k6u5a738rw\.com:58011 url script-response-body https://raw.githubusercontent.com/githubtestpaul/Scripting/master/aaa.js
 
-# 广告域名直拒
 ^https?://stats\.kwvprfcr\.xyz url reject
 ^https?://mc\.yandex\.ru url reject
-^https?://(doubleclick|googletagmanager|pagead|adsbygoogle|kwvprfcr) url reject
